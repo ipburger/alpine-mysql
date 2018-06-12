@@ -1,11 +1,13 @@
 #!/bin/sh
 
+if [ -f "/pre-init.sh" ]; then
+  /pre-init.sh
+fi
+
 if [ -d /db/mysql ]; then
   echo "[i] MySQL directory already present, skipping creation"
 else
   echo "[i] MySQL data directory not found, creating initial DBs"
-
-  mysql_install_db --user=root > /dev/null
 
   if [ "$MYSQL_ROOT_PASSWORD" = "" ]; then
     echo '[e] $MYSQL_ROOT_PASSWORD missing.'
@@ -13,6 +15,8 @@ else
   else
     echo "[i] MySQL root Password: $MYSQL_ROOT_PASSWORD"
   fi
+
+  mysql_install_db --user=root > /dev/null
 
   MYSQL_DATABASE=${MYSQL_DATABASE:-""}
   MYSQL_USER=${MYSQL_USER:-""}
@@ -47,6 +51,10 @@ EOF
 
   /usr/bin/mysqld --user=root --bootstrap --verbose=0 < $tfile
   rm -f $tfile
+
+  if [ -f "/post-init.sh" ]; then
+    /post-init.sh
+  fi
 fi
 
 exec /usr/bin/mysqld --user=root --console

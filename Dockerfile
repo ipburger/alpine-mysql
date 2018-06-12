@@ -1,12 +1,12 @@
 FROM alpine:latest
-MAINTAINER WangXian <xian366@126.com>
+MAINTAINER IPBurger <accounts@ipburger.com>
 
-WORKDIR /app
-VOLUME /app
-COPY startup.sh /startup.sh
+RUN apk add --no-cache mysql mysql-client
 
-RUN apk add --update mysql mysql-client && rm -f /var/cache/apk/*
-COPY my.cnf /etc/mysql/my.cnf
+COPY bin/startup.sh /startup.sh
+COPY conf/db.cnf /etc/mysql/db.cnf
 
+WORKDIR /db
+VOLUME /db
 EXPOSE 3306
 CMD ["/startup.sh"]
