@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ -d /app/mysql ]; then
+if [ -d /db/mysql ]; then
   echo "[i] MySQL directory already present, skipping creation"
 else
   echo "[i] MySQL data directory not found, creating initial DBs"
@@ -8,7 +8,9 @@ else
   mysql_install_db --user=root > /dev/null
 
   if [ "$MYSQL_ROOT_PASSWORD" = "" ]; then
-    MYSQL_ROOT_PASSWORD=111111
+    echo '[e] $MYSQL_ROOT_PASSWORD missing.'
+    exit 1
+  else
     echo "[i] MySQL root Password: $MYSQL_ROOT_PASSWORD"
   fi
 
@@ -46,6 +48,5 @@ EOF
   /usr/bin/mysqld --user=root --bootstrap --verbose=0 < $tfile
   rm -f $tfile
 fi
-
 
 exec /usr/bin/mysqld --user=root --console
