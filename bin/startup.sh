@@ -22,10 +22,6 @@ else
   MYSQL_USER=${MYSQL_USER:-""}
   MYSQL_PASSWORD=${MYSQL_PASSWORD:-""}
 
-  if [ ! -d "/run/mysqld" ]; then
-    mkdir -p /run/mysqld
-  fi
-
   tfile=`mktemp`
   if [ ! -f "$tfile" ]; then
       return 1
@@ -52,8 +48,33 @@ EOF
   /usr/bin/mysqld --user=root --bootstrap --verbose=0 < $tfile
   rm -f $tfile
 
-  if [ -f "/post-init.sh" ]; then
-    /post-init.sh
+  echo "[dbinit.d] finding files"
+  if [ "$(ls -A /dbinit.d)" ]; then
+    echo "[dbinit.d] found init files"
+    SOCKET="/tmp/mysql.sock"
+    mysqld --user=root --skip-networking --socket="${SOCKET}" &
+
+    for i in {30..0}; do
+      if mysqladmin --socket="${SOCKET}" ping &>/dev/null; then
+        break
+      fi
+      echo '[dbinit.d] Waiting for server...'
+      sleep 1
+    done
+    if [ "$i" = 0 ]; then
+      echo >&2 '[dbinit.d] Timeout during MySQL init.'
+      exit 1
+    fi
+
+    for f in /dbinit.d/*; do
+      case "$f" in
+        *.sh)  echo "[dbinit.d] running $f"; . "$f" ;;
+        *.sql) echo "[dbinit.d] running $f"; mysql --socket="${SOCKET}" -hlocalhost "${MYSQL_DATABASE}" < "$f";;
+        *)     echo "[dbinit.d] ignoring $f" ;;
+      esac
+    done
+    echo '[dbinit.d] Finished.'
+    mysqladmin shutdown --user=root --socket="${SOCKET}"
   fi
 fi
 
