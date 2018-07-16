@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM alpine:3.8
 MAINTAINER IPBurger <accounts@ipburger.com>
 
 RUN apk add --no-cache mysql mysql-client
