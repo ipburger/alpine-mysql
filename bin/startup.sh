@@ -4,6 +4,8 @@ if [ -f "/pre-init.sh" ]; then
   /pre-init.sh
 fi
 
+[ "$DEBUG" == 'true' ] && set -x
+
 if [ -d /db/mysql ]; then
   echo "[i] MySQL directory already present, skipping creation"
 else
