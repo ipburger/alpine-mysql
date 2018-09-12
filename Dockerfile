@@ -8,6 +8,7 @@ COPY conf/my.cnf /etc/mysql/my.cnf
 
 RUN mkdir -p /run/mysqld && mkdir -p /dbinit.d
 RUN echo "test"
+RUN echo "test2"
 
 WORKDIR /db
 VOLUME /db
